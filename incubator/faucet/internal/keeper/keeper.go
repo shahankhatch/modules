@@ -27,7 +27,6 @@ type Keeper struct {
 
 // NewKeeper creates new instances of the Faucet Keeper
 func NewKeeper(
-	supplyKeeper types.SupplyKeeper,
 	stakingKeeper types.StakingKeeper,
 	accountKeeper auth.AccountKeeper,
 	amount int64,
@@ -35,7 +34,6 @@ func NewKeeper(
 	storeKey sdk.StoreKey,
 	cdc *codec.Codec) Keeper {
 	return Keeper{
-		SupplyKeeper:  supplyKeeper,
 		StakingKeeper: stakingKeeper,
 		AccountKeeper: accountKeeper,
 		amount:        amount,

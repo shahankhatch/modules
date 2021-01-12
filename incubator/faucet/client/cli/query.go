@@ -2,12 +2,12 @@ package cli
 
 import (
 	"fmt"
+
 	// "strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -20,7 +20,7 @@ import (
 )
 
 // GetQueryCmd returns the cli query commands for this module
-func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetQueryCmd(queryRoute string, cdc *codec.AminoCodec) *cobra.Command {
 	// Group pooltoy queries under a subcommand
 	pooltoyQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
@@ -30,36 +30,36 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
+	brrrCommand := GetCmdWhenBrrr(queryRoute, cdc)
+	flags.AddTxFlagsToCmd(brrrCommand)
 	pooltoyQueryCmd.AddCommand(
-		flags.GetCommands(
-			GetCmdWhenBrrr(queryRoute, cdc),
-		)...,
+		brrrCommand,
 	)
 
 	return pooltoyQueryCmd
 }
 
-func GetCmdWhenBrrr(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdWhenBrrr(queryRoute string, cdc *codec.AminoCodec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "when-brrr [userAccount]",
 		Short: "how many seconds until this user can brrr again",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx := client.GetClientContextFromCmd(cmd)
 			address := args[0]
 			_, err := sdk.AccAddressFromBech32(address)
 			if err != nil {
 				fmt.Printf("could not query User\n%s\n", err.Error())
 				return nil
 			}
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", queryRoute, keeper.QueryWhenBrrr, address), nil)
+			res, _, err := clientCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", queryRoute, keeper.QueryWhenBrrr, address), nil)
 			if err != nil {
 				fmt.Printf("could not query User\n%s\n", err.Error())
 				return nil
 			}
 			var out int64
-			cdc.MustUnmarshalJSON(res, &out)
-			return cliCtx.PrintOutput(out)
+			clientCtx.LegacyAmino.MustUnmarshalJSON(res, &out)
+			return clientCtx.PrintObjectLegacy(out)
 		},
 	}
 }

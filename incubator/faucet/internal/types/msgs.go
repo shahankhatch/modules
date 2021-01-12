@@ -9,11 +9,25 @@ import (
 // RouterKey is the module name router key
 const RouterKey = ModuleName // this was defined in your key.go file
 
+var _ sdk.Msg = &MsgMint{}
+
 // MsgMint defines a mint message
 type MsgMint struct {
 	Sender sdk.AccAddress
 	Minter sdk.AccAddress
 	Denom  string
+}
+
+func (msg MsgMint) Reset() {
+	panic("implement me")
+}
+
+func (msg MsgMint) String() string {
+	panic("implement me")
+}
+
+func (msg MsgMint) ProtoMessage() {
+	panic("implement me")
 }
 
 // NewMsgMint is a constructor function for NewMsgMint
@@ -48,7 +62,8 @@ func (msg MsgMint) ValidateBasic() error {
 
 // GetSignBytes encodes the message for signing
 func (msg MsgMint) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
 }
 
 // GetSigners defines whose signature is required
@@ -56,10 +71,24 @@ func (msg MsgMint) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Sender}
 }
 
+var _ sdk.Msg = &MsgFaucetKey{}
+
 // MsgMint defines a mint message
 type MsgFaucetKey struct {
 	Sender sdk.AccAddress
 	Armor  string
+}
+
+func (msg MsgFaucetKey) Reset() {
+	panic("implement me")
+}
+
+func (msg MsgFaucetKey) String() string {
+	panic("implement me")
+}
+
+func (msg MsgFaucetKey) ProtoMessage() {
+	panic("implement me")
 }
 
 // NewMsgFaucetKey is a constructor function for MsgFaucetKey
@@ -86,7 +115,8 @@ func (msg MsgFaucetKey) ValidateBasic() error {
 
 // GetSignBytes encodes the message for signing
 func (msg MsgFaucetKey) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
 }
 
 // GetSigners defines whose signature is required
