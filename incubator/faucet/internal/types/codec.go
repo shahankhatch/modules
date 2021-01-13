@@ -9,6 +9,8 @@ var ModuleCdc *codec.AminoCodec
 var Cdc *codec.LegacyAmino
 
 func init() {
+	Cdc = codec.NewLegacyAmino()
+	ModuleCdc = codec.NewAminoCodec(Cdc)
 	RegisterCodec(ModuleCdc)
 }
 

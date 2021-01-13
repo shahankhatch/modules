@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	auth "github.com/cosmos/cosmos-sdk/x/auth"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/okwme/modules/incubator/faucet/internal/types"
 	"github.com/tendermint/tendermint/libs/log"
 )
@@ -18,21 +18,21 @@ const FaucetStoreKey = "DefaultFaucetStoreKey"
 type Keeper struct {
 	SupplyKeeper  types.SupplyKeeper
 	StakingKeeper types.StakingKeeper
-	AccountKeeper auth.AccountKeeper
-	amount        int64         // set default amount for each mint.
-	Limit         time.Duration // rate limiting for mint, etc 24 * time.Hours
-	storeKey      sdk.StoreKey  // Unexposed key to access store from sdk.Context
-	cdc           *codec.Codec  // The wire codec for binary encoding/decoding.
+	AccountKeeper authkeeper.AccountKeeper
+	amount        int64             // set default amount for each mint.
+	Limit         time.Duration     // rate limiting for mint, etc 24 * time.Hours
+	storeKey      sdk.StoreKey      // Unexposed key to access store from sdk.Context
+	cdc           *codec.AminoCodec // The wire codec for binary encoding/decoding.
 }
 
 // NewKeeper creates new instances of the Faucet Keeper
 func NewKeeper(
 	stakingKeeper types.StakingKeeper,
-	accountKeeper auth.AccountKeeper,
+	accountKeeper authkeeper.AccountKeeper,
 	amount int64,
 	rateLimit time.Duration,
 	storeKey sdk.StoreKey,
-	cdc *codec.Codec) Keeper {
+	cdc *codec.AminoCodec) Keeper {
 	return Keeper{
 		StakingKeeper: stakingKeeper,
 		AccountKeeper: accountKeeper,
@@ -91,7 +91,7 @@ func (k Keeper) getMining(ctx sdk.Context, minter sdk.AccAddress) types.Mining {
 	}
 	bz := store.Get(minter.Bytes())
 	var mining types.Mining
-	k.cdc.MustUnmarshalBinaryBare(bz, &mining)
+	k.cdc.LegacyAmino.MustUnmarshalBinaryBare(bz, &mining)
 	return mining
 }
 
@@ -103,7 +103,7 @@ func (k Keeper) setMining(ctx sdk.Context, minter sdk.AccAddress, mining types.M
 		return
 	}
 	store := ctx.KVStore(k.storeKey)
-	store.Set(minter.Bytes(), k.cdc.MustMarshalBinaryBare(mining))
+	store.Set(minter.Bytes(), k.cdc.LegacyAmino.MustMarshalBinaryBare(mining))
 }
 
 // IsPresent check if the name is present in the store or not
@@ -116,14 +116,14 @@ func (k Keeper) GetFaucetKey(ctx sdk.Context) types.FaucetKey {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get([]byte(FaucetStoreKey))
 	var faucet types.FaucetKey
-	k.cdc.MustUnmarshalBinaryBare(bz, &faucet)
+	k.cdc.LegacyAmino.MustUnmarshalBinaryBare(bz, &faucet)
 	return faucet
 }
 
 func (k Keeper) SetFaucetKey(ctx sdk.Context, armor string) {
 	store := ctx.KVStore(k.storeKey)
 	faucet := types.NewFaucetKey(armor)
-	store.Set([]byte(FaucetStoreKey), k.cdc.MustMarshalBinaryBare(faucet))
+	store.Set([]byte(FaucetStoreKey), k.cdc.LegacyAmino.MustMarshalBinaryBare(faucet))
 }
 
 func (k Keeper) HasFaucetKey(ctx sdk.Context) bool {

@@ -53,7 +53,7 @@ func queryWhenBrrr(ctx sdk.Context, path []string, req abci.RequestQuery, k Keep
 		}
 	}
 
-	res, err := codec.MarshalJSONIndent(k.cdc, timeLeft)
+	res, err := codec.MarshalJSONIndent(k.cdc.LegacyAmino, timeLeft)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -62,7 +62,7 @@ func queryWhenBrrr(ctx sdk.Context, path []string, req abci.RequestQuery, k Keep
 
 func queryFaucetKey(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
 	value := keeper.GetFaucetKey(ctx)
-	res, err := codec.MarshalJSONIndent(keeper.cdc, value)
+	res, err := codec.MarshalJSONIndent(keeper.cdc.LegacyAmino, value)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
